@@ -8,12 +8,12 @@ from django.contrib.auth.models import User
 
 class User_Profile(models.Model):
     user = AutoOneToOneField(User, primary_key=True, on_delete=models.CASCADE, related_name="profile")
-    saved_orders = models.ManyToManyField("Order", through="User_Orders")
-    location = models.ForeignKey("Location", on_delete=models.CASCADE, related_name="users", null=True)
+    saved_orders = models.ManyToManyField("Order", through="User_Order")
+    location = models.ForeignKey("Location", on_delete=models.CASCADE, related_name="user_profile", help_text="(Do not change)", null=True)
     # photo = models.ImageField(upload_to="profileimages/", blank=True, null=True)
-    phone = models.CharField(max_length=12, help_text="Enter phone number (optional)", blank=True, null=True)
-    #class Meta:
-        #app_label = "s"
+    phone = models.CharField(max_length=12, blank=True, null=True)
+    def __str__(self):
+        return self.user.username
 
 class Menu_Item(models.Model):
     BREAKFAST = "BF"
@@ -33,7 +33,7 @@ class Menu_Item(models.Model):
         choices=TYPE_OPTIONS,
         default=OTHER,
     )
-    orders = models.ManyToManyField("Order", blank=True, through="Order_Items")
+    orders = models.ManyToManyField("Order", blank=True, through="Order_Item")
 
     def __str__(self):
         return self.name
@@ -41,13 +41,14 @@ class Menu_Item(models.Model):
 
 class Order(models.Model):
     order_id = models.AutoField(primary_key=True)
-    items = models.ManyToManyField(Menu_Item, blank=True, through="Order_Items")
+    name = models.TextField()
+    items = models.ManyToManyField(Menu_Item, blank=True, through="Order_Item")
     date_created = models.DateTimeField(default=timezone.now)
-    profiles = models.ManyToManyField(User_Profile, through="User_Orders")
+    profiles = models.ManyToManyField(User_Profile, through="User_Order")
     author = models.ForeignKey(User_Profile, on_delete=models.CASCADE, related_name="my_orders")
 
     def __str__(self):
-        string = ""
+        string = f"{self.name}: "
         if self.items.count():
             for i in self.items.all():
                 if i is self.items.last():
@@ -62,14 +63,18 @@ class Order(models.Model):
         return self.items.count() == 0
 
 # Explicit through table for user_profile <-> order (ManyToMany)
-class User_Orders(models.Model):
+class User_Order(models.Model):
     user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.user_profile.user.username}: {self.order.name}"
 
 # Explicit through table for order <-> menu_item (ManyToMany)
-class Order_Items(models.Model):
+class Order_Item(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     menu_item = models.ForeignKey(Menu_Item, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.order.name}: {self.menu_item.name}"
 
 class Dietary_Restriction(models.Model):
     ALLERGIES = "AL"
@@ -118,20 +123,35 @@ class Location_Info(models.Model):
     phone = models.CharField(max_length=12, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.city}, {self.state}: {self.name}"
+        return f"{self.city}, {self.state} - {self.name}"
 
 class Location(models.Model):
+    #user_profile = AutoOneToOneField(User_Profile, primary_key=True, on_delete=models.CASCADE, related_name="location")
     _id = models.AutoField(primary_key=True)
+    # max_length same as User.username length
+    username = models.CharField(max_length=150, help_text="(do not change)")
     # used for updating location_info when tchhack locations API is called (old location_info is erased and updated)
-    location_id = models.IntegerField(null=True)
-    location_info = models.ForeignKey("Location_Info", on_delete=models.SET_NULL, null=True)
+    location_id = models.IntegerField(null=True, help_text="(do not change)")
+    info = models.ForeignKey("Location_Info", on_delete=models.SET_NULL, null=True,  help_text="(do not change)")
     class Meta:
         ordering = ("location_id",)
 
+    # Do not allow editing of the location table except by location_update scripts
+    # (to change user_profile location, create a new location entry)
+    def save(self, *args, **kwargs):
+        if self.pk is None or self.location_info is None:
+            super(Location, self).save(*args, **kwargs)
+
     def __str__(self):
-        if self.location_info is not None:
-            return self.location_info.__str__()
+        if self.info is not None:
+            return f"{str(self.username)}: {self.info.__str__()}"
         else:
             return "Location info missing, or has not been specified"
-    #def set_location(self, loc
+
+    @property
+    def display(self):
+        if self.info is not None:
+            return f"{self.info.name}\n{self.info.city}, {self.info.state}"
+        else:
+            return ""
 

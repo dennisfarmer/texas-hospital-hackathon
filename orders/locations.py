@@ -44,13 +44,18 @@ def get_locations(refresh=False) -> pd.DataFrame:
 
 
 # Read data from .json and insert entries into Location_Info table
-def import_locations_to_database(overwrite=True):
-    # DELETE FROM LocationInfo;
-    if overwrite or Location_Info.objects.all().count() > 0:
-        Location_Info.objects.all().delete()
+def import_locations_to_database(force=False):
+    if Location_Info.objects.all().count() > 0:
+        if force:
+            # DELETE FROM LocationInfo;
+            Location_Info.objects.all().delete()
+        else:
+            print("Database already populated, specify --force to force rewrite")
+
+    if Location_Info.objects.all().count() == 0:
         locations = get_locations()
         for index, row in locations.iterrows():
-            loc = Location_Info(
+            info = Location_Info(
                 location_id = index,
                 name = row["name"],
                 address = row["address"],
@@ -62,13 +67,13 @@ def import_locations_to_database(overwrite=True):
                 photo_url = row["photo"],
                 phone = row["phone"])
 
-            loc.save()
-            Location.objects.filter(location_id=loc.location_id).update(location_info=loc)
+            info.save()
+            Location.objects.filter(location_id=info.location_id).update(info=info)
 
 # Return sequence of two item iterables to use as user selection choices in fields or forms
 def get_location_choices():
     try:
-        location_choices = [(loc.pk, loc.__str__()) for loc in Location_Info.objects.order_by("city")]
+        location_choices = [(info.pk, info.__str__()) for info in Location_Info.objects.order_by("city")]
     except OperationalError as err:
         print(f"django.db.utils.OperationalError: {err}", "Non-fatal error, continuing...", sep="\n")
         location_choices = [(1, "Location info could not be found")]
