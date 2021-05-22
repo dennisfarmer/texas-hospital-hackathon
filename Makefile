@@ -38,6 +38,6 @@ restart:
 fullrestart:
 	rm -f $(DB)
 	make refresh args="--force"
-	make createsuperuser
+	python createsuperuser.py
 	make run
 

@@ -1,5 +1,6 @@
 db.sqlite3
-.env
+texashospital/.env
 __pycache__/
 *.py[cod]
 *.kate-swp
+
