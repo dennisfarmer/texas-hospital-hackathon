@@ -22,13 +22,6 @@ refresh:
 	$(MANAGER) migrate --run-syncdb
 	python import_locations.py $(args)
 
-# Create a user that can be used to access django's admin page
-createsuperuser:
-	export DJANGO_SUPERUSER_USERNAME=dennisfarmer
-	export DJANGO_SUPERUSER_PASSWORD=securepassword
-	export DJANGO_SUPERUSER_EMAIL=admin@djangoproject.com
-	$(MANAGER) createsuperuser --noinput
-
 # Perform a migration on the database model and start the server
 restart:
 	make refresh

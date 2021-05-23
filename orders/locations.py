@@ -73,7 +73,7 @@ def import_locations_to_database(force=False):
 # Return sequence of two item iterables to use as user selection choices in fields or forms
 def get_location_choices():
     try:
-        location_choices = [(info.pk, info.__str__()) for info in Location_Info.objects.order_by("city")]
+        location_choices = [(str(info.pk), info.__str__()) for info in Location_Info.objects.order_by("city")]
     except OperationalError as err:
         print(f"django.db.utils.OperationalError: {err}", "Non-fatal error, continuing...", sep="\n")
         location_choices = [(1, "Location info could not be found")]
