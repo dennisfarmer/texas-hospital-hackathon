@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 #from django.contrib.admin.widgets import FilteredSelectMultiple
-from django_select2.forms import ModelSelect2MultipleWidget
+#from django_select2.forms import ModelSelect2MultipleWidget
+from searchableselect.widgets import SearchableSelect
 
 #from django.contrib.auth.forms import ucf as base...
 import sys, os
@@ -14,23 +15,15 @@ from .models import (
 from .foods import get_food_groups, backup_custom_food
 
 class OrderCreationForm(forms.ModelForm):
-    name = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
-    info = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
-    items = forms.ChoiceField
-    # .ModelMultipleChoiceField
-    items = forms.ModelMultipleChoiceField(
-        label = "Menu Items",
-        queryset = Menu_Item.objects.all(),
-        required = False
-        #widget = ModelSelect2MultipleWidget(model=Menu_Item, search_fields=["name__icontains"])
-    )
-                              #widget=forms.CheckboxSelectMultiple(),
-                              #widget=FilteredSelectMultiple("Menu Items", True),
-                              #required = False)
-
     class Meta:
         model = Order
-        fields = ["name", "info", "items"]
+        widgets = {
+            "items": SearchableSelect(model="orders.Menu_Item",
+                                      search_field="name',
+                                      many=True,
+                                      limit=10)
+        }
+        #fields = ["name", "info", "items"]
 
     def save(self, commit=True, *args, **kwargs):
         order = super(OrderCreationForm, self).save(commit=False, *args, **kwargs)

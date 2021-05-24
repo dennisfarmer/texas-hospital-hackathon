@@ -16,3 +16,5 @@ sudo apt-get install -y libjs-jquery
 
 #start cache server:
 redis-server
+
+# python -m pip install ...

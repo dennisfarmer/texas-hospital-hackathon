@@ -31,7 +31,8 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="users/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(template_name="users/logout.html"), name="logout"),
     path("", include("orders.urls")),
-    path("select2/", include("django_select2.urls")),
+    path("searchableselect/", include('searchableselect.urls'))
+    #path("select2/", include("django_select2.urls")),
 ]
 
 if settings.DEBUG:
