@@ -20,7 +20,7 @@ refresh:
 	$(MANAGER) makemigrations
 	$(MANAGER) migrate
 	$(MANAGER) migrate --run-syncdb
-	python import_locations.py $(args)
+	python write_to_db.py $(args)
 
 # Perform a migration on the database model and start the server
 restart:
@@ -31,6 +31,6 @@ restart:
 fullrestart:
 	rm -f $(DB)
 	make refresh args="--force"
-	python createsuperuser.py
+	python create_super_user.py
 	make run
 

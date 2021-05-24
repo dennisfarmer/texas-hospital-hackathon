@@ -92,7 +92,6 @@ class ProfileUpdateForm(forms.ModelForm):
         location_id = kwargs.get("instance").location.location_id
         phone = kwargs.get("instance").phone
         super(ProfileUpdateForm, self).__init__(*args, **kwargs)
-        loc_ids = get_location_choices()
         self.initial["location_id"] = location_id
         self.initial["phone"] = phone
         # self.helper = FormHelper(self)
@@ -125,8 +124,7 @@ class ProfileUpdateForm(forms.ModelForm):
                 username = self.instance.user.username,
                 location_id = new_location_id,
                 info = Location_Info.objects.filter(pk=new_location_id).first()
-            )
-            new_location.save()
+            ).save()
             profile.location = new_location
             profile.save()
 

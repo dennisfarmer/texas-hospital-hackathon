@@ -2,29 +2,20 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.gis.db.models import PointField
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from users.models import User_Profile
 
+MAX_CHARFIELD_LENGTH = 240
+
 class Menu_Item(models.Model):
-    BREAKFAST = "BF"
-    LUNCH = "LU"
-    DINNER = "DI"
-    OTHER = "OT"
-    TYPE_OPTIONS = [
-        (BREAKFAST, "Breakfast"),
-        (LUNCH, "Lunch"),
-        (DINNER, "Dinner"),
-        (OTHER, "Other/Unspecified")
-    ]
-
     item_id = models.AutoField(primary_key=True)
-    name = models.TextField(help_text="Enter the name of the food")
-    item_type = models.CharField(max_length=2,
-                                 choices=TYPE_OPTIONS,
-                                 default=OTHER,)
-
+    name = models.CharField(help_text="Enter the name of the food",
+                            max_length=MAX_CHARFIELD_LENGTH)
+    food_group = models.CharField(blank=True,
+                                  max_length=MAX_CHARFIELD_LENGTH)
     orders = models.ManyToManyField("Order",
                                     blank=True,
                                     through="Order_Item")
@@ -32,16 +23,25 @@ class Menu_Item(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def display(self):
+        if self.food_group != "":
+            return f"{self.food_group} - {self.name}"
+        else:
+            return self.name
+
 
 class Order(models.Model):
     order_id = models.AutoField(primary_key=True)
-    name = models.TextField()
+    name = models.CharField(max_length=MAX_CHARFIELD_LENGTH)
+    info = models.CharField(max_length=MAX_CHARFIELD_LENGTH,
+                            blank=True, null=True)
     items = models.ManyToManyField(Menu_Item,
                                    blank=True,
                                    through="Order_Item")
 
     date_created = models.DateTimeField(default=timezone.now)
-    profiles = models.ManyToManyField(User_Profile, through="User_Order")
+    #profiles = models.ManyToManyField(User_Profile, through="User_Order")
     author = models.ForeignKey(User_Profile,
                                on_delete=models.CASCADE,
                                related_name="my_orders")
@@ -49,73 +49,106 @@ class Order(models.Model):
     def __str__(self):
         string = f"{self.name}: "
         if self.items.count():
-            for i in self.items.all():
-                if i is self.items.last():
-                    string = "".join([string, "and ", i, "."])
+            for item in self.items.all():
+                if item == self.items.last():
+                    string = "".join([string, "and ", item, "."])
                 else:
-                    string = "".join([string, ", ", i, ", "])
+                    string = "".join([string, ", ", item, ", "])
+        else:
+            string = "Order is empty"
+        return string
+
+    # display first five items
+    @property
+    def display_head(self):
+        # (cannot pass parameters into jinja object property)
+        max_display = 5
+        count = self.items.count()
+        first = self.items.first()
+        last = self.items.last()
+        if first is not None:
+            for item in self.items.all()[:max_display]:
+                if item == first:
+                    string = str(first)
+                elif item == last:
+                    string = "".join([string, ", and ", str(item)])
+                else:
+                    string = "".join([string, ", ", str(item)])
+            if item != last and count > max_display:
+                if count - max_display == 1:
+                    string = "".join([string, " and 1 other"])
+                else:
+                    string = "".join([string, " and ",
+                                      str(count - max_display),
+                                      " others"])
         else:
             string = "Order is empty"
         return string
 
     def __bool__(self):
-        return self.items.count() == 0
+        return self.items.count() != 0
+
+    def get_absolute_url(self):
+        return reverse("order-detail", kwargs={"pk": self.pk})
+
 
 # Explicit through table for user_profile <-> order (ManyToMany)
-class User_Order(models.Model):
-    user_profile = models.ForeignKey(User_Profile,
-                                     on_delete=models.CASCADE)
+#class User_Order(models.Model):
+    #user_profile = models.ForeignKey(User_Profile,
+                                     #on_delete=models.CASCADE)
 
-    order = models.ForeignKey(Order,
-                              on_delete=models.CASCADE)
-    def __str__(self):
-        return f"{self.user_profile.user.username}: {self.order.name}"
+    #order = models.ForeignKey(Order,
+                              #on_delete=models.CASCADE)
+    #def __str__(self):
+        #return f"{self.user_profile.user.username}: {self.order.name}"
 
 # Explicit through table for order <-> menu_item (ManyToMany)
 class Order_Item(models.Model):
     order = models.ForeignKey(Order,
                               on_delete=models.CASCADE)
 
+    menu_item_name = models.CharField(max_length=MAX_CHARFIELD_LENGTH)
     menu_item = models.ForeignKey(Menu_Item,
-                                  on_delete=models.CASCADE)
+                                  on_delete=models.SET_NULL,
+                                  null=True)
     def __str__(self):
         return f"{self.order.name}: {self.menu_item.name}"
 
-class Dietary_Restriction(models.Model):
-    ALLERGIES = "AL"
-    CULTURE = "CR"
-    CONDITION = "CD"
-    OTHER = "OT"
-    TYPE_OPTIONS = [
-        (ALLERGIES, "Food Allergies"),
-        (CULTURE, "Culture/Religion"),
-        (CONDITION, "Health Conditions"),
-        (OTHER, "Other/Unspecified")
-    ]
+#class Dietary_Restriction(models.Model):
+    #ALLERGIES = "AL"
+    #CULTURE = "CR"
+    #CONDITION = "CD"
+    #OTHER = "OT"
+    #TYPE_OPTIONS = [
+        #(ALLERGIES, "Food Allergies"),
+        #(CULTURE, "Culture/Religion"),
+        #(CONDITION, "Health Conditions"),
+        #(OTHER, "Other/Unspecified")
+    #]
 
-    restr_id = models.AutoField(primary_key=True)
-    name = models.TextField()
-    info = models.TextField(default="", blank=True)
-    restr_type = models.CharField(max_length=2,
-                                  choices=TYPE_OPTIONS,
-                                  default=OTHER,)
-    menu_item = models.ForeignKey(Menu_Item, on_delete=models.CASCADE)
+    #restr_id = models.AutoField(primary_key=True)
+    #name = models.TextField()
+    #info = models.TextField(default="", blank=True)
+    #restr_type = models.CharField(max_length=2,
+                                  #choices=TYPE_OPTIONS,
+                                  #default=OTHER,)
+    #menu_item = models.ForeignKey(Menu_Item, on_delete=models.CASCADE)
 
-    mass_allowed_milligrams = models.FloatField(
-        help_text="Enter quantity allowed (in milligrams)",
-        default=0)
+    #mass_allowed_milligrams = models.FloatField(
+        #help_text="Enter quantity allowed (in milligrams)",
+        #default=0)
 
-    def __str__(self):
-        if self.info:
-            if self.mass_allowed_milligrams == 0:
-                return f"{self.name} not allowed: {self.info}"
-            else:
-                return f"{self.name} limited to {self.mass_allowed_milligrams} mg: {self.info}"
-        else:
-            if self.mass_allowed_milligrams == 0:
-                return f"{self.name} not allowed"
-            else:
-                return f"{self.name} limited to {self.mass_allowed_milligrams} mg"
+    #def __str__(self):
+        #if self.info:
+            #if self.mass_allowed_milligrams == 0:
+                #return f"{self.name} not allowed: {self.info}"
+            #else:
+                #return f"{self.name} limited to {self.mass_allowed_milligrams} mg: {self.info}"
+        #else:
+            #if self.mass_allowed_milligrams == 0:
+                #return f"{self.name} not allowed"
+            #else:
+                #return f"{self.name} limited to {self.mass_allowed_milligrams} mg"
 
 class Location_Info(models.Model):
     location_id = models.IntegerField(primary_key=True)
@@ -134,7 +167,7 @@ class Location_Info(models.Model):
 
 class Location(models.Model):
     _id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=150,
+    username = models.CharField(max_length=MAX_CHARFIELD_LENGTH,
                                 help_text="(do not change)")
     # used for updating location_info when tchhack
     # locations API is called (old location_info is 

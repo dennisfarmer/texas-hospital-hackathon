@@ -9,7 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <link rel="stylesheet" type="text/css" href="{% static 'orders/main.css'%}">
+    <link rel="stylesheet" type="text/css" href="{% static 'orders/main.css' %}">
 
     {% if title %}
         <title>West Eats - {{title}}</title>
@@ -66,9 +66,10 @@
                 <p class='text-muted'>Your location:<br>{{ request.user.profile.location.display }}
                 {% endif %}
                 <ul class="list-group">
-                    <li class="list-group-item list-group-item-light">Place an Order</li>
+                    <li class="list-group-item list-group-item-light"><a href="{% url 'order-create' %}">Create an Order</a></li>
                     <li class="list-group-item list-group-item-light">View Saved Orders</li>
-                    <!-- <li class="list-group-item list-group-item-light">Edit Profile</li> -->
+                <!-- <li class="list-group-item list-group-item-light">Edit Profile</li> -->
+                <!-- <li class="list-group-item list-group-item-light">Place an Order</li> -->
                 </ul>
                 </p>
             </div>

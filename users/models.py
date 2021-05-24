@@ -9,7 +9,7 @@ class User_Profile(models.Model):
                                 on_delete=models.CASCADE,
                                 related_name="profile")
 
-    saved_orders=models.ManyToManyField("orders.Order", through="orders.User_Order")
+    #saved_orders=models.ManyToManyField("orders.Order", through="orders.User_Order")
 
     location=models.OneToOneField("orders.Location",
                                on_delete=models.CASCADE,

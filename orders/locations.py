@@ -3,15 +3,12 @@ from django.db.utils import OperationalError
 
 import pandas as pd
 import os
-import sys
 import requests
 import json
 
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 from .models import Location, Location_Info
 
-datapath = os.path.join(os.path.dirname(__file__), "api_response.json")
+datapath = os.path.join(os.path.dirname(__file__), "data/api_response.json")
 
 def get_locations(refresh=False) -> pd.DataFrame:
     url = "https://api.tchhack.com/locations"
@@ -44,13 +41,13 @@ def get_locations(refresh=False) -> pd.DataFrame:
 
 
 # Read data from .json and insert entries into Location_Info table
-def import_locations_to_database(force=False):
+def write_locations_to_database(force=False):
     if Location_Info.objects.all().count() > 0:
         if force:
             # DELETE FROM LocationInfo;
             Location_Info.objects.all().delete()
         else:
-            print("Database already populated, specify --force to force rewrite")
+            print("locations.py: Database already populated, specify --force to force rewrite")
 
     if Location_Info.objects.all().count() == 0:
         locations = get_locations()
@@ -73,19 +70,12 @@ def import_locations_to_database(force=False):
 # Return sequence of two item iterables to use as user selection choices in fields or forms
 def get_location_choices():
     try:
-        location_choices = [(str(info.pk), info.__str__()) for info in Location_Info.objects.order_by("city")]
+        return [(str(info.pk), info.__str__()) for info in Location_Info.objects.order_by("city")]
     except OperationalError as err:
-        print(f"django.db.utils.OperationalError: {err}", "Non-fatal error, continuing...", sep="\n")
-        location_choices = [(1, "Location info could not be found")]
-    return location_choices
+        print(f"django.db.utils.OperationalError: {err}", "locations.py: Non-fatal error, continuing...", sep="\n")
+        return [(1, "locations.py: Location info could not be found")]
 
 
 if __name__ == "__main__":
-    choice = input("Would you like to print the location choices? [y|N] ")
-    if choice.lower() == "y":
-        get_location_choices()
-    else:
-        choice = input("Would you like to overwrite the location database? [y|N] ")
-    if choice.lower() == "y":
-        import_locations_to_database()
+    pass
 
