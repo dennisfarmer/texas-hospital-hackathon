@@ -20,6 +20,13 @@ class Menu_Item(models.Model):
                                     blank=True,
                                     through="Order_Item")
 
+    def as_dict(self):
+        return {self.name: {
+            "item_id": self.item_id,
+            "name": self.name,
+            "food_group": self.food_group
+        }}
+
     def __str__(self):
         return self.name
 
