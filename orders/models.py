@@ -58,9 +58,9 @@ class Order(models.Model):
         if self.items.count():
             for item in self.items.all():
                 if item == self.items.last():
-                    string = "".join([string, "and ", item, "."])
+                    string = "".join([string, "and ", str(item), "."])
                 else:
-                    string = "".join([string, ", ", item, ", "])
+                    string = "".join([string, ", ", str(item), ", "])
         else:
             string = "Order is empty"
         return string
@@ -69,19 +69,14 @@ class Order(models.Model):
     @property
     def display_head(self):
         # (cannot pass parameters into jinja object property)
+        string = ""
         max_display = 5
         count = self.items.count()
         first = self.items.first()
         last = self.items.last()
         if first is not None:
-            for item in self.items.all()[:max_display]:
-                if item == first:
-                    string = str(first)
-                elif item == last:
-                    string = "".join([string, ", and ", str(item)])
-                else:
-                    string = "".join([string, ", ", str(item)])
-            if item != last and count > max_display:
+            string = ", ".join([str(item) for item in self.items.all()[:max_display]])
+            if count > max_display:
                 if count - max_display == 1:
                     string = "".join([string, " and 1 other"])
                 else:
@@ -103,13 +98,17 @@ class Order_Purchase(models.Model):
     # of orders/customers who have an order in progress / still in the
     # database. For demonstration purposes this works
     customer = models.ForeignKey(User_Profile,
-                                on_delete=models.PROTECT
+                                on_delete=models.PROTECT,
+                                 null=True
                                 )
     order = models.ForeignKey(Order,
-                               on_delete=models.PROTECT
+                               on_delete=models.PROTECT,
+                              null=True
                               )
     time_created = models.DateTimeField(default=timezone.now)
-    vendor = models.CharField()
+    # vendor is assumed to be in same city as customer
+    vendor = models.CharField(max_length=MAX_CHARFIELD_LENGTH, null=True)
+    distance = models.FloatField(null=True)
     is_fulfilled = models.BooleanField(default=False)
 
     def __str__(self):

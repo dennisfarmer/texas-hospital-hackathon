@@ -5,7 +5,9 @@ from .views import (
     OrderCreateView,
     MenuItemCreateView,
     OrderUpdateView,
-    OrderDeleteView
+    OrderDeleteView,
+    PlaceOrderSelectView,
+    PlaceOrderConfirmView
 )
 from . import views
 

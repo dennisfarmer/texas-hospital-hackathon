@@ -17,8 +17,7 @@
                     </ul>
                 {% endif %}
                 {% if order.author == user.profile %}
-                    <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'order-update' order.pk %}">Edit Order</a>
-                    <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'order-delete' order.pk %}">Delete Order</a>
+                    <button class="btn btn-primary" type="submit">Place Order</button>
                 {% endif %}
 
         </div>

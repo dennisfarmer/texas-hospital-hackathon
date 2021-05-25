@@ -34,8 +34,9 @@ class PlaceOrderSelectView(ListView):
     context_object_name = "orders"
     ordering = ["-date_created"]
 
-class PlaceOrderConfirmView(CreateView):
-    model = Order_Purchase
+# uses update view without updating to access order attrs
+class PlaceOrderConfirmView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Order
     form_class = PlaceOrderForm
     #context_object_name = "Order"
     # Specifying both fields and form_class is not permitted
@@ -45,6 +46,10 @@ class PlaceOrderConfirmView(CreateView):
         return super().form_valid(form)
     template_name = "orders/place_order_confirm.html"
     success_url = "/"
+
+    def test_func(self):
+        order = self.get_object()
+        return self.request.user.profile == order.author
 
 class OrderListView(ListView):
     model = Order

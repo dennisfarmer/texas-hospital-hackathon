@@ -16,18 +16,19 @@ from .models import (
     MAX_CHARFIELD_LENGTH
 )
 from .foods import get_food_groups, backup_custom_food
+from .vendors import get_vendors_in
 
 class OrderCreationForm(forms.ModelForm):
     name = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
     info = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
     items = forms.ModelMultipleChoiceField(
         label="Items: [Press Ctrl+F to search entries, and End to go to the bottom]",
-        # i give up, searchable multichoice is a foggy dream in a distant dreamland
-        # (dis shit don't work smdh)
-        #widget=FilteredSelectMultiple("Menu_Item", is_stacked=False),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         queryset=Menu_Item.objects.order_by("name"))
+        # searchable multichoice is a foggy dream in a distant dreamland
+        # (dis shit don't work smdh)
+        #widget=FilteredSelectMultiple("Menu_Item", is_stacked=False),
 
     class Media:
         css = {"all": ("/static/admin/css/widgets.css",),}
@@ -80,10 +81,30 @@ class MenuItemCreationForm(forms.ModelForm):
             backup_custom_food(item.pk, name, food_group)
         return item
 
+# uses update field without updating object so that we can access order attrs
 class PlaceOrderForm(forms.ModelForm):
-    class Meta(self):
-        model = Order_Purchase
+    def __init__(self, *args, **kwargs):
+        order = kwargs.get("instance")
+        Order_Purchase.objects.create(customer=order.author, order=order)
+        super(PlaceOrderForm, self).__init__(*args, **kwargs)
+
+    vendor = forms.ChoiceField(choices = get_vendors_in("Austin",
+                                                        (30.230323, -97.798894)))
+    class Meta:
+        model = Order
         fields = ["vendor"]
+    def save(self, commit=True, *args, **kwargs):
+        # "vendor, lat, long, delta_miles"
+        selected_vendor = self.cleaned_data["vendor"]
+        if commit:
+            purchase = Order_Purchase.objects.last()
+            purchase.vendor = selected_vendor.split(", ")[0],
+            purchase.distance = selected_vendor.split(", ")[3],
+            purchase.save()
+
+        # TODO: create copies of author and order so that deleting
+        # either author or order does not effect unfulfilled order purchase
+        return order
 
 class OrderUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -94,6 +115,11 @@ class OrderUpdateForm(forms.ModelForm):
 
     name = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
     info = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
+    items = forms.ModelMultipleChoiceField(
+        label="Items: [Press Ctrl+F to search entries, and End to go to the bottom]",
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        queryset=Menu_Item.objects.order_by("name"))
     #items = forms.ChoiceField(label = "Menu Items",
                                   #queryset = Menu_Item.objects.all(),
                                   #widget=ModelSelect2MultipleWidget(
