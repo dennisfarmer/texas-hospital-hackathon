@@ -25,7 +25,7 @@ def get_vendors_in(city, latlong):
         v_loc = rand_loc(city_locations[city])
         delta_d = round(delta_distance_miles(v_loc, latlong), 2)
         L.append((f"{v}, {v_loc[0]}, {v_loc[1]}, {delta_d}", f"{v} - {delta_d} miles away"))
-    return [([v,city,rand_loc(city_locations[city])] , f"{v} - {city}: ") for v in vendors]
+    return L
 
 
 # TODO: implement inventory system (that's like a bunch of work so no lol)

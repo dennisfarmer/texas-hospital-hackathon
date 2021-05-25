@@ -74,7 +74,7 @@ class MenuItemCreationForm(forms.ModelForm):
         name = self.cleaned_data["name"]
         food_group = self.cleaned_data["food_group"]
         if commit:
-            item.name = name
+            item.name = name.title()
             item.food_group = food_group
             item.save()
             # backup custom food items to csv
@@ -88,23 +88,30 @@ class PlaceOrderForm(forms.ModelForm):
         Order_Purchase.objects.create(customer=order.author, order=order)
         super(PlaceOrderForm, self).__init__(*args, **kwargs)
 
-    vendor = forms.ChoiceField(choices = get_vendors_in("Austin",
+    vendor = forms.ChoiceField(label="Select a Local Vendor ",
+                               # this is the only cheat in the whole codebase
+                               # html jinja templates can't call functions using 
+                               # parameters :(
+                               choices = get_vendors_in("Austin",
                                                         (30.230323, -97.798894)))
     class Meta:
         model = Order
         fields = ["vendor"]
+
     def save(self, commit=True, *args, **kwargs):
         # "vendor, lat, long, delta_miles"
         selected_vendor = self.cleaned_data["vendor"]
         if commit:
             purchase = Order_Purchase.objects.last()
-            purchase.vendor = selected_vendor.split(", ")[0],
-            purchase.distance = selected_vendor.split(", ")[3],
+            purchase.vendor = str(selected_vendor.split(", ")[0])
+            purchase.distance = float(selected_vendor.split(", ")[3])
             purchase.save()
 
         # TODO: create copies of author and order so that deleting
         # either author or order does not effect unfulfilled order purchase
-        return order
+
+        # do not alter the order instance
+        return super(PlaceOrderForm, self).save(commit=False, *args, **kwargs)
 
 class OrderUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
