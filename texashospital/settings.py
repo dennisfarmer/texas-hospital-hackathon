@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'orders.apps.OrdersConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
-    'searchableselect',
     #'django_select2',
     'django.contrib.admin',
     'django.contrib.auth',

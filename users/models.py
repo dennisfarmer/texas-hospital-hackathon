@@ -22,6 +22,15 @@ class User_Profile(models.Model):
 
     phone = models.CharField(max_length=12, blank=True, null=True)
 
+    @property
+    def number_of_orders(self):
+        # import orders.models.Order inside of function to prevent circular import error
+        import sys,os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+        from orders.models import Order
+        return Order.objects.filter(author=self).count()
+
+
     def __str__(self):
         return self.user.username
 

@@ -1,0 +1,17 @@
+{% extends "orders/base.html" %}
+{% block content %}
+<div class="list-group">
+    <legend class="border-bottom mb-s">Select an Order:</legend>
+    {% for order in orders %}
+    <!-- class="... active" for highlight -->
+    <a href="{% url 'place-order-confirm' order.pk %}" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ order.name }}</h5>
+                <small>{{ order.date_created|date:"F j, Y" }}</small>
+            </div>
+            <p class="mb-1">{{ order.info }}</p>
+            <small>{{ order.display_head }}</small>
+        </a>
+    {% endfor %}
+</div>
+{% endblock content %}

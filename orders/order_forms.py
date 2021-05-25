@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth.models import User
+
+# here lies shattered dreams...
 #from django.contrib.admin.widgets import FilteredSelectMultiple
 #from django_select2.forms import ModelSelect2MultipleWidget
-from searchableselect.widgets import SearchableSelect
+#from searchableselect.widgets import SearchableSelect
 
 #from django.contrib.auth.forms import ucf as base...
 import sys, os
@@ -10,20 +12,31 @@ from .models import (
     Menu_Item,
     Order,
     Order_Item,
+    Order_Purchase,
     MAX_CHARFIELD_LENGTH
 )
 from .foods import get_food_groups, backup_custom_food
 
 class OrderCreationForm(forms.ModelForm):
+    name = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
+    info = forms.CharField(max_length=MAX_CHARFIELD_LENGTH)
+    items = forms.ModelMultipleChoiceField(
+        label="Items: [Press Ctrl+F to search entries, and End to go to the bottom]",
+        # i give up, searchable multichoice is a foggy dream in a distant dreamland
+        # (dis shit don't work smdh)
+        #widget=FilteredSelectMultiple("Menu_Item", is_stacked=False),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        queryset=Menu_Item.objects.order_by("name"))
+
+    class Media:
+        css = {"all": ("/static/admin/css/widgets.css",),}
+        js = ("/admin/jsi18n",)
+
     class Meta:
         model = Order
-        widgets = {
-            "items": SearchableSelect(model="orders.Menu_Item",
-                                      search_field="name',
-                                      many=True,
-                                      limit=10)
-        }
-        #fields = ["name", "info", "items"]
+        #exclude = ("date_created", "author")
+        fields = ["name", "info", "items"]
 
     def save(self, commit=True, *args, **kwargs):
         order = super(OrderCreationForm, self).save(commit=False, *args, **kwargs)
@@ -54,7 +67,7 @@ class MenuItemCreationForm(forms.ModelForm):
         fields = ["name", "food_group"]
 
     def save(self, commit=True, *args, **kwargs):
-        item = super(OrderCreationForm, self).save(commit=False,
+        item = super(MenuItemCreationForm, self).save(commit=False,
                                                    *args,
                                                    **kwargs)
         name = self.cleaned_data["name"]
@@ -66,6 +79,11 @@ class MenuItemCreationForm(forms.ModelForm):
             # backup custom food items to csv
             backup_custom_food(item.pk, name, food_group)
         return item
+
+class PlaceOrderForm(forms.ModelForm):
+    class Meta(self):
+        model = Order_Purchase
+        fields = ["vendor"]
 
 class OrderUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

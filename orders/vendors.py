@@ -1,13 +1,54 @@
-from django.db.utils import OperationalError
-from pandas.errors import EmptyDataError
+from numpy.random import ranf
+from numpy import sqrt
 
-import pandas as pd
-import os
-import sys
-import requests
-import json
+vendors = ["H.E.B.", "Whole Foods", "Kroger"]
 
-from .models import Order, Menu_Item, Order_Item
+city_locations = {'The Woodlands': (30.1658, -95.4613), 'Austin':(30.2672, -97.7431), 'Houston':(29.7604, -95.3698), 'Kingwood':(30.0500, -95.1845), 'Humble':(29.9988, -95.2622), 'Bellaire':(29.7058, -95.4588), 'Cypress':(29.9717, -95.6938), 'Pearland':(29.5636, -95.2860), 'Katy':(29.7858, -95.8245), 'McAllen':(26.2034, -98.2300), 'Sugar Land':(29.5984, -95.6226), 'Webster':(29.5377, -95.1183)}
+
+
+# for testing purposes, generate random (lat, long)
+def rand_loc(lat, long):
+    return dim[0] - dim[1] for dim in zip(
+        (lat, long), [n-0.5 for n in np.ranf(size=2)]
+
+        #lat is y
+def calc_distance_miles(a, b)
+        # rough parameter that averages lat->mi and long->mi, more accurate estimates would use trig
+        miles_per_latlong = 64
+        delta_lat = a[0] - b[0]
+        delta_long = a[1] - b[1]
+        return sqrt(delta_lat**2 + delta_long**2) * miles_per_latlong
+
+
+def get_vendors(city="all"):
+    if city=="all":
+        L = []
+        for v in vendors:
+            for c in city_locations:
+                L.append((f"{v} - {c}", f"{v} - {c}"))
+        return L
+    else:
+        if city not in [c for c in city_locations]:
+            raise IndexError()
+            return
+        else:
+            return [(f"{v} - {city}", f"{v} - {city}") for v in vendors]
+
+
+# TODO: implement inventory system (that's like a bunch of work so no lol)
+
+
+def create_purchase(customer:"users.User_Profile", order: "orders.Order", vendor: str):
+    import sys, os
+    from .models import Order, Order_Purchase
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    from users.models import User_Profile
+    Order_Purchase.objects.create(customer=customer,
+                                  order=order,
+                                  vendor=vendor)
+
+
+
 
 datapath = os.path.join(os.path.dirname(__file__), "data/")
 

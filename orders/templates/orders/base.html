@@ -49,6 +49,33 @@
     <!-- main.html -->
     <main role="main" class="container">
     <div class="row">
+
+        <!-- sidebar -->
+        {% if user.is_authenticated %}
+            <div class="col-md-4">
+            <div class="content-section">
+                <h3>Welcome,<br>{{ request.user.first_name }}{% if request.user.last_name != "" %} {{ request.user.last_name }}{% endif %}!</h3>
+                {% if request.user.profile.location.display %}
+                <p class='text-muted'>Your location:<br>{{ request.user.profile.location.display }}
+                {% endif %}
+                <ul class="list-group">
+                    <a class="list-group-item d-flex justify-content-between align-items-center list-group-item-action" href="{% url 'orders-home' %}">
+                        My Orders
+                        <span class="badge badge-primary badge-pill">{{ request.user.profile.number_of_orders }}</span>
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="{% url 'order-create' %}">Create New Order</a>
+                    <a class="list-group-item list-group-item-action" style="margin-bottom:5%;" href="{% url 'item-create' %}">Create a Menu Item</a>
+                <!-- <li class="list-group-item list-group-item-light"></li> -->
+                <a class="list-group-item list-group-item-action" href="{% url 'place-order-select' %}">Place an Order</a>
+                <!-- <li class="list-group-item list-group-item-light">Edit Profile</li> -->
+                <!-- <li class="list-group-item list-group-item-light">Place an Order</li> -->
+                </ul>
+                </p>
+            </div>
+            </div>
+            {% endif %}
+
+    <!-- content column -->
         <div class="col-md-8">
             {% if messages %}
                 {% for message in messages %}
@@ -59,23 +86,8 @@
             {% endif %}
             {% block content %}{% endblock %}
         </div>
-        {% if user.is_authenticated %}
-            <div class="col-md-4">
-            <div class="content-section">
-                <h3>Welcome,<br>{{ request.user.first_name }}{% if request.user.last_name != "" %} {{ request.user.last_name }}{% endif %}!</h3>
-                {% if request.user.profile.location.display %}
-                <p class='text-muted'>Your location:<br>{{ request.user.profile.location.display }}
-                {% endif %}
-                <ul class="list-group">
-                    <li class="list-group-item list-group-item-light"><a href="{% url 'order-create' %}">Create an Order</a></li>
-                    <li class="list-group-item list-group-item-light">View Saved Orders</li>
-                <!-- <li class="list-group-item list-group-item-light">Edit Profile</li> -->
-                <!-- <li class="list-group-item list-group-item-light">Place an Order</li> -->
-                </ul>
-                </p>
-            </div>
-            </div>
-            {% endif %}
+
+
     </div>
     </main>
 

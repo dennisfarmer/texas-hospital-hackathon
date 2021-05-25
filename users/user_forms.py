@@ -130,12 +130,3 @@ class ProfileUpdateForm(forms.ModelForm):
 
         return profile
 
-
-
-
-
-
-
-
-
-

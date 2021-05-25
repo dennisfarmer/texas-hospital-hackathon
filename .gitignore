@@ -3,4 +3,5 @@ texashospital/.env
 __pycache__/
 *.py[cod]
 *.kate-swp
+*.rdb
 

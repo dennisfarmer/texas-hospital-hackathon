@@ -9,11 +9,11 @@
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-s">Order</legend>
+                <legend class="border-bottom mb-s">New Item</legend>
                 {{ form|crispy }}
             </fieldset>
             <div class="form-group">
-                <button class="btn btn-primary" type="submit">Save Order</button>
+                <button class="btn btn-primary" type="submit">Create Item</button>
             </div>
         </form>
     </div>

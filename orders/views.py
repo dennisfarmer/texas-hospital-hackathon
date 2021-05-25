@@ -10,11 +10,12 @@ from django.views.generic import (
     DeleteView
 
 )
-from .models import Order
+from .models import Order, Menu_Item, Order_Purchase
 from .order_forms import (
     OrderCreationForm,
     MenuItemCreationForm,
-    OrderUpdateForm
+    OrderUpdateForm,
+    PlaceOrderForm
 )
 
 # TODO: write a "My Orders" page that uses most of the code from
@@ -26,6 +27,24 @@ def home(request):
         "orders": Order.objects.all()
     }
     return render(request, "orders/home.html", context)
+
+class PlaceOrderSelectView(ListView):
+    model = Order
+    template_name = "orders/place_order_select.html"
+    context_object_name = "orders"
+    ordering = ["-date_created"]
+
+class PlaceOrderConfirmView(CreateView):
+    model = Order_Purchase
+    form_class = PlaceOrderForm
+    #context_object_name = "Order"
+    # Specifying both fields and form_class is not permitted
+    #fields = ['name', 'info', 'items']
+    def form_valid(self, form):
+        form.instance.customer = self.request.user.profile
+        return super().form_valid(form)
+    template_name = "orders/place_order_confirm.html"
+    success_url = "/"
 
 class OrderListView(ListView):
     model = Order
@@ -48,6 +67,18 @@ class OrderCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user.profile
         return super().form_valid(form)
+
+class MenuItemCreateView(LoginRequiredMixin, CreateView):
+    model = Menu_Item
+    form_class = MenuItemCreationForm
+    template_name = "orders/item_form.html"
+    success_url = "/"
+    #context_object_name = "Order"
+    # Specifying both fields and form_class is not permitted
+    #fields = ['name', 'info', 'items']
+    #def form_valid(self, form):
+        #form.instance.author = self.request.user.profile
+        #return super().form_valid(form)
 
 class OrderUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Order

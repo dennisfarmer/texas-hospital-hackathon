@@ -98,6 +98,23 @@ class Order(models.Model):
     def get_absolute_url(self):
         return reverse("order-detail", kwargs={"pk": self.pk})
 
+class Order_Purchase(models.Model):
+    # TODO: instead of models.PROTECT, use a signal to create a copy
+    # of orders/customers who have an order in progress / still in the
+    # database. For demonstration purposes this works
+    customer = models.ForeignKey(User_Profile,
+                                on_delete=models.PROTECT
+                                )
+    order = models.ForeignKey(Order,
+                               on_delete=models.PROTECT
+                              )
+    time_created = models.DateTimeField(default=timezone.now)
+    vendor = models.CharField()
+    is_fulfilled = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.customer.user.username}: {self.order.name}"
+
 
 # Explicit through table for user_profile <-> order (ManyToMany)
 #class User_Order(models.Model):
