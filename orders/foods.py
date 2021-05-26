@@ -34,13 +34,17 @@ def get_custom_foods(f=custom_food_csv) -> pd.DataFrame:
     if os.path.exists(f):
         try:
             food_df = pd.read_csv(f).set_index("id")
-            try:
-                assert list(food_df.columns.values) == ["name", "food_group"]
-            except AssertionError:
-                print(f"AssertionError: {list(food_df.columns.values)} does not match [\"name\", \"food_group\"]", "foods.py: returning empty df", sep="\n")
-                food_df = pd.DataFrame()
+            #try:
+                #assert list(food_df.columns.values) == ["name", "food_group"]
+            #except AssertionError:
+                #print(f"AssertionError: {list(food_df.columns.values)} does not match [\"name\", \"food_group\"]", "foods.py: returning empty df", sep="\n")
+                #food_df = pd.DataFrame()
         except EmptyDataError as err:
             print(f"pandas.errors.EmptyDataError: {err}", "foods.py: returning empty df", sep="\n")
+            food_df = pd.DataFrame()
+        try:
+            food_df = food_df[["name", "food_group"]]
+        except:
             food_df = pd.DataFrame()
     else:
         food_df = pd.DataFrame()
@@ -83,13 +87,15 @@ def write_foods_to_database(force=False):
 
 # Return list of unique food_groups
 def get_food_groups():
-    try:
-        L= Menu_Item.objects.order_by("food_group").values_list("food_group", flat=True).distinct()
-    except OperationalError as err:
-        print("django.db.utils.OperationalError: ", err, sep="")
-        print("foods.py: Non-fatal error, continuing...")
-        L = ["Unclassified"]
-    return L
+    return get_generic_foods()["food_groups"].unique()
+    # results in OperationalError that doesn't get caught by the try block smh
+    #try:
+        #L = Menu_Item.objects.order_by("food_group").values_list("food_group", flat=True).distinct()
+    #except OperationalError as err:
+        #print("django.db.utils.OperationalError: ", err, sep="")
+        #print("foods.py: Non-fatal error, continuing...")
+        #L = ["Unclassified"]
+    #return L
 
 # Used by orders.order_forms.ItemCreationForm to backup new menu_items to csv
 # so that they can be recalled after refreshing (removing all entries from)

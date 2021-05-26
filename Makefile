@@ -19,7 +19,6 @@ shell:
 refresh:
 	$(MANAGER) makemigrations
 	$(MANAGER) migrate
-	$(MANAGER) migrate --run-syncdb
 	python write_to_db.py $(args)
 
 # Perform a migration on the database model and start the server

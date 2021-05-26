@@ -3,6 +3,7 @@ import os
 os.environ["DJANGO_SETTINGS_MODULE"] = "texashospital.settings"
 import django
 django.setup()
+from django.db.utils import IntegrityError
 
 # export DJANGO_SUPERUSER_USERNAME=dennisfarmer
 # export DJANGO_SUPERUSER_PASSWORD=securepassword
@@ -11,4 +12,8 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
-User.objects.create_superuser("dennisfarmer", "admin@djangoproject.com", "securepassword")
+try:
+    User.objects.create_superuser("dennisfarmer", "admin@djangoproject.com", "securepassword")
+except IntegrityError as err:
+    print("django.db.utils.IntegrityError: ", err, "create_super_user.py: Nonfatal error...", sep="")
+    pass

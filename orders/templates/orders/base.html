@@ -3,6 +3,12 @@
 <html>
 <head>
 
+<style>
+* {
+    font-family: 'Consolas', 'Courier New', Courier, Monaco, monospace;
+}
+</style>
+
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -15,9 +21,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'orders/main.css' %}">
 
     {% if title %}
-        <title>West Eats - {{title}}</title>
+        <title>South Eats - {{title}}</title>
     {% else %}
-        <title>West Eats</title>
+        <title>South Eats</title>
     {% endif %}
 </head>
 <body>
@@ -25,7 +31,7 @@
     <header class="site-header">
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" style="background-color:#E51B27;">
         <div class="container">
-            <a class="navbar-brand mr-4" style="font-family:Consolas, 'Courier New', Courier, Monaco, monospace;"   href="{% url 'orders-home' %}">{ West Eats }</a>
+            <a class="navbar-brand mr-4" style="font-family:Consolas, 'Courier New', Courier, Monaco, monospace;"   href="{% url 'orders-home' %}">{ South Eats }</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
             </button>
