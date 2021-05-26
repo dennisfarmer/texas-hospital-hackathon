@@ -21,6 +21,11 @@ refresh:
 	$(MANAGER) migrate
 	python write_to_db.py $(args)
 
+fullrefresh:
+	rm -f $(DB)
+	make refresh args="--force"
+	python create_super_user.py
+
 # Perform a migration on the database model and start the server
 restart:
 	make refresh
