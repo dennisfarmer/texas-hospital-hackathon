@@ -3,7 +3,7 @@
 - Duration: May 14th-24th, 2021
 - Project Theme: Food Service and Delivery
 
-Django web application that allows users to create and purchase food orders based on their local eatery and grocery options.
+South Eats: A Django web application that allows users to create and purchase food orders based on their local eatery and grocery options.
 
 
 Data links:
